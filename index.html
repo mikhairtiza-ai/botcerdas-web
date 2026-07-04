@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bot Sekolah Cerdas — Otomasi Sekolah lewat WhatsApp</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --white:#FFFFFF;
+    --paper:#F6F6F2;
+    --paper-deep:#EFEEE7;
+    --ink:#14161A;
+    --ink-soft:#5B5F66;
+    --ink-faint:#93968E;
+    --forest:#24483F;
+    --forest-light:#3C6A5C;
+    --forest-mist:#EAF1EE;
+    --gold:#B8862B;
+    --gold-mist:#F7EED9;
+    --line:#E4E2DA;
+    --mint:#3EBD79;
+    --radius:14px;
+    --maxw:1160px;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--white);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+    line-height:1.55;
+  }
+  h1,h2,h3{
+    font-family:'Space Grotesk',sans-serif;
+    color:var(--ink);
+    margin:0;
+    letter-spacing:-0.01em;
+  }
+  .mono{
+    font-family:'JetBrains Mono', monospace;
+    letter-spacing:0.02em;
+  }
+  a{color:inherit;}
+  img,svg{display:block;max-width:100%;}
+  .wrap{
+    max-width:var(--maxw);
+    margin:0 auto;
+    padding:0 32px;
+  }
+  section{padding:96px 0;}
+  @media (max-width:720px){
+    section{padding:64px 0;}
+    .wrap{padding:0 20px;}
+  }
+
+  :focus-visible{
+    outline:2px solid var(--forest);
+    outline-offset:3px;
+  }
+
+  /* ---------- header ---------- */
+  header{
+    position:sticky;
+    top:0;
+    z-index:50;
+    background:rgba(255,255,255,0.86);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+  }
+  .nav{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:18px 32px;
+    max-width:var(--maxw);
+    margin:0 auto;
+  }
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    font-size:1.15rem;
+  }
+  .brand-mark{
+    width:28px;height:28px;
+    border-radius:8px;
+    background:var(--forest);
+    position:relative;
+    flex-shrink:0;
+  }
+  .brand-mark::after{
+    content:"";
+    position:absolute;
+    inset:8px;
+    border-radius:3px;
+    background:var(--gold);
+  }
+  nav.links{
+    display:flex;
+    gap:32px;
+    font-size:0.94rem;
+    color:var(--ink-soft);
+  }
+  nav.links a{
+    text-decoration:none;
+    transition:color .15s ease;
+  }
+  nav.links a:hover{color:var(--ink);}
+  .nav-right{display:flex;align-items:center;gap:18px;}
+  .status-pill{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:0.76rem;
+    padding:6px 12px 6px 10px;
+    border-radius:999px;
+    background:var(--forest-mist);
+    color:var(--forest);
+    white-space:nowrap;
+  }
+  .dot{
+    width:7px;height:7px;border-radius:50%;
+    background:var(--mint);
+    flex-shrink:0;
+  }
+  @media (prefers-reduced-motion: no-preference){
+    .dot{animation:pulse 2.2s ease-in-out infinite;}
+  }
+  @keyframes pulse{
+    0%,100%{box-shadow:0 0 0 0 rgba(62,189,121,.5);}
+    50%{box-shadow:0 0 0 5px rgba(62,189,121,0);}
+  }
+  .burger{display:none;background:none;border:none;cursor:pointer;padding:6px;}
+  .burger span{display:block;width:22px;height:2px;background:var(--ink);margin:5px 0;}
+  @media (max-width:860px){
+    nav.links{display:none;}
+    .burger{display:block;}
+  }
+  .mobile-menu{
+    display:none;
+    flex-direction:column;
+    gap:2px;
+    padding:8px 20px 18px;
+    border-top:1px solid var(--line);
+  }
+  .mobile-menu.open{display:flex;}
+  .mobile-menu a{
+    padding:10px 0;
+    text-decoration:none;
+    color:var(--ink-soft);
+    border-bottom:1px solid var(--line);
+    font-size:0.95rem;
+  }
+
+  /* ---------- hero ---------- */
+  .hero{
+    padding-top:88px;
+    padding-bottom:64px;
+    display:grid;
+    grid-template-columns:1.05fr 0.95fr;
+    gap:56px;
+    align-items:center;
+  }
+  @media (max-width:960px){
+    .hero{grid-template-columns:1fr;padding-top:56px;}
+  }
+  .eyebrow{
+    font-family:'JetBrains Mono',monospace;
+    font-size:0.78rem;
+    color:var(--gold);
+    text-transform:uppercase;
+    letter-spacing:0.12em;
+    margin-bottom:18px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .eyebrow::before{
+    content:"";
+    width:22px;height:1px;
+    background:var(--gold);
+  }
+  .hero h1{
+    font-size:clamp(2.1rem, 4vw, 3.15rem);
+    font-weight:700;
+    line-height:1.08;
+    margin-bottom:22px;
+  }
+  .hero h1 em{
+    font-style:normal;
+    color:var(--forest);
+  }
+  .hero p.lead{
+    font-size:1.08rem;
+    color:var(--ink-soft);
+    max-width:46ch;
+    margin-bottom:30px;
+  }
+  .cta-row{display:flex;gap:14px;flex-wrap:wrap;align-items:center;}
+  .btn{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:13px 22px;
+    border-radius:10px;
+    font-weight:600;
+    font-size:0.95rem;
+    text-decoration:none;
+    border:1px solid transparent;
+    cursor:pointer;
+    transition:transform .15s ease, background .15s ease, border-color .15s ease;
+  }
+  .btn:hover{transform:translateY(-1px);}
+  .btn-primary{background:var(--forest);color:var(--white);}
+  .btn-primary:hover{background:var(--forest-light);}
+  .btn-ghost{background:transparent;color:var(--ink);border-color:var(--line);}
+  .btn-ghost:hover{border-color:var(--ink-faint);}
+
+  .hero-note{
+    margin-top:28px;
+    font-size:0.85rem;
+    color:var(--ink-faint);
+    display:flex;
+    gap:8px;
+    align-items:center;
+  }
+
+  /* ---------- phone mockup ---------- */
+  .phone{
+    background:var(--white);
+    border:1px solid var(--line);
+    border-radius:26px;
+    padding:10px;
+    width:100%;
+    max-width:340px;
+    margin:0 auto;
+    box-shadow:0 30px 60px -30px rgba(20,22,26,0.25);
+  }
+  .phone-screen{
+    background:var(--paper);
+    border-radius:18px;
+    overflow:hidden;
+    min-height:460px;
+    display:flex;
+    flex-direction:column;
+  }
+  .phone-bar{
+    background:var(--forest);
+    color:var(--white);
+    padding:14px 16px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-size:0.9rem;
+    font-weight:600;
+  }
+  .phone-avatar{
+    width:30px;height:30px;
+    border-radius:50%;
+    background:var(--gold);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Space Grotesk',sans-serif;
+    font-size:0.85rem;
+    color:var(--forest);
+    flex-shrink:0;
+  }
+  .phone-bar .who{display:flex;flex-direction:column;gap:2px;}
+  .phone-bar .who small{
+    font-weight:400;
+    font-size:0.72rem;
+    opacity:0.8;
+    display:flex;align-items:center;gap:5px;
+  }
+  .phone-body{
+    flex:1;
+    padding:16px 14px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .bubble{
+    max-width:82%;
+    padding:10px 13px;
+    border-radius:14px;
+    font-size:0.86rem;
+    opacity:0;
+    transform:translateY(6px);
+  }
+  @media (prefers-reduced-motion: no-preference){
+    .bubble{animation:rise .45s ease forwards;}
+    .bubble.b1{animation-delay:.2s;}
+    .bubble.b2{animation-delay:1.5s;}
+    .bubble.b3{animation-delay:2.9s;}
+    .bubble.b4{animation-delay:3.7s;}
+    .typing{animation:rise .3s ease forwards, blink 1.2s ease infinite;animation-delay:2.2s, 2.2s;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .bubble, .typing{opacity:1;transform:none;}
+  }
+  @keyframes rise{to{opacity:1;transform:translateY(0);}}
+  @keyframes blink{0%,100%{opacity:.35;}50%{opacity:1;}}
+  .bubble.in{
+    align-self:flex-start;
+    background:var(--white);
+    border:1px solid var(--line);
+    border-bottom-left-radius:4px;
+    color:var(--ink);
+  }
+  .bubble.out{
+    align-self:flex-end;
+    background:var(--forest);
+    color:var(--white);
+    border-bottom-right-radius:4px;
+  }
+  .bubble.out .time,.bubble.in .time{
+    display:block;
+    margin-top:4px;
+    font-size:0.66rem;
+    opacity:0.65;
+  }
+  .typing{
+    align-self:flex-start;
+    background:var(--white);
+    border:1px solid var(--line);
+    border-bottom-left-radius:4px;
+    padding:10px 14px;
+    display:flex;
+    gap:4px;
+    opacity:0;
+  }
+  .typing i{
+    width:5px;height:5px;border-radius:50%;
+    background:var(--ink-faint);
+    display:inline-block;
+  }
+
+  /* ---------- section headers ---------- */
+  .sec-head{
+    max-width:640px;
+    margin-bottom:52px;
+  }
+  .sec-head .eyebrow{color:var(--forest);}
+  .sec-head .eyebrow::before{background:var(--forest);}
+  .sec-head h2{
+    font-size:clamp(1.6rem,3vw,2.2rem);
+    margin-bottom:14px;
+  }
+  .sec-head p{color:var(--ink-soft);font-size:1.02rem;}
+
+  .alt-bg{background:var(--paper);}
+
+  /* ---------- features ---------- */
+  .feature-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:1px;
+    background:var(--line);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    overflow:hidden;
+  }
+  @media (max-width:860px){.feature-grid{grid-template-columns:repeat(2,1fr);}}
+  @media (max-width:600px){.feature-grid{grid-template-columns:1fr;}}
+  .feature{
+    background:var(--white);
+    padding:30px 26px;
+  }
+  .feature .ic{
+    width:38px;height:38px;
+    margin-bottom:18px;
+  }
+  .feature h3{
+    font-size:1.05rem;
+    margin-bottom:8px;
+    font-weight:600;
+  }
+  .feature p{
+    color:var(--ink-soft);
+    font-size:0.92rem;
+    margin:0;
+  }
+
+  /* ---------- architecture flow ---------- */
+  .flow{
+    display:flex;
+    align-items:stretch;
+    gap:0;
+  }
+  @media (max-width:860px){.flow{flex-direction:column;}}
+  .flow-step{
+    flex:1;
+    background:var(--white);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:26px 22px;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+  .flow-step .tag{
+    font-family:'JetBrains Mono',monospace;
+    font-size:0.7rem;
+    color:var(--ink-faint);
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+  }
+  .flow-step h3{font-size:1rem;font-weight:600;}
+  .flow-step p{color:var(--ink-soft);font-size:0.88rem;margin:0;}
+  .flow-arrow{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    width:44px;
+    flex-shrink:0;
+    color:var(--ink-faint);
+  }
+  @media (max-width:860px){
+    .flow-arrow{width:100%;height:28px;}
+    .flow-arrow svg{transform:rotate(90deg);}
+  }
+
+  /* ---------- progress track ---------- */
+  .progress-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    margin-bottom:44px;
+    flex-wrap:wrap;
+    gap:16px;
+  }
+  .progress-num{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    font-size:3.2rem;
+    color:var(--forest);
+    line-height:1;
+  }
+  .progress-num span{font-size:1.4rem;color:var(--ink-faint);font-weight:600;}
+
+  .track{
+    position:relative;
+    padding-top:6px;
+  }
+  .track-line{
+    position:absolute;
+    top:25px;
+    left:0;right:0;
+    height:2px;
+    background:var(--line);
+  }
+  .track-line-fill{
+    position:absolute;
+    top:25px;
+    left:0;
+    height:2px;
+    width:58%;
+    background:var(--forest);
+  }
+  .track-nodes{
+    display:grid;
+    grid-template-columns:repeat(6,1fr);
+    gap:8px;
+    position:relative;
+  }
+  .node{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    text-align:center;
+    gap:14px;
+  }
+  .node-dot{
+    width:20px;height:20px;
+    border-radius:50%;
+    border:2px solid var(--line);
+    background:var(--white);
+    z-index:1;
+  }
+  .node.done .node-dot{background:var(--forest);border-color:var(--forest);}
+  .node.active .node-dot{
+    border-color:var(--forest);
+    background:linear-gradient(90deg, var(--forest) 50%, var(--white) 50%);
+  }
+  .node-label{
+    font-size:0.82rem;
+    font-weight:600;
+    color:var(--ink);
+    max-width:110px;
+  }
+  .node-status{
+    font-family:'JetBrains Mono',monospace;
+    font-size:0.68rem;
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+    color:var(--ink-faint);
+  }
+  .node.done .node-status{color:var(--forest);}
+  .node.active .node-status{color:var(--gold);}
+  @media (max-width:860px){
+    .track-nodes{grid-template-columns:1fr;gap:26px;text-align:left;}
+    .node{flex-direction:row;text-align:left;gap:16px;}
+    .node-label{max-width:none;}
+    .track-line,.track-line-fill{
+      top:0;bottom:0;left:9px;right:auto;width:2px;height:auto;
+    }
+  }
+
+  /* ---------- tech stack ---------- */
+  .stack-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:12px;
+  }
+  .chip{
+    font-family:'JetBrains Mono',monospace;
+    font-size:0.85rem;
+    padding:10px 16px;
+    border-radius:999px;
+    border:1px solid var(--line);
+    background:var(--white);
+    color:var(--ink-soft);
+    display:flex;align-items:center;gap:8px;
+  }
+  .chip b{color:var(--ink);font-weight:600;}
+
+  /* ---------- contact ---------- */
+  .contact-box{
+    background:var(--forest);
+    color:var(--white);
+    border-radius:20px;
+    padding:56px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:32px;
+    flex-wrap:wrap;
+  }
+  .contact-box h2{color:var(--white);font-size:clamp(1.5rem,3vw,2rem);margin-bottom:10px;}
+  .contact-box p{color:rgba(255,255,255,0.72);max-width:42ch;margin:0;}
+  .contact-actions{display:flex;gap:14px;flex-wrap:wrap;}
+  .contact-box .btn-primary{background:var(--white);color:var(--forest);}
+  .contact-box .btn-primary:hover{background:var(--gold-mist);}
+  .contact-box .btn-ghost{border-color:rgba(255,255,255,0.3);color:var(--white);}
+  .contact-box .btn-ghost:hover{border-color:rgba(255,255,255,0.6);}
+
+  footer{
+    padding:36px 0;
+    border-top:1px solid var(--line);
+  }
+  .foot-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:12px;
+    font-size:0.84rem;
+    color:var(--ink-faint);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="nav">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true"></span>
+      Bot Sekolah Cerdas
+    </div>
+    <nav class="links">
+      <a href="#fitur">Fitur</a>
+      <a href="#cara-kerja">Cara Kerja</a>
+      <a href="#progres">Progres</a>
+      <a href="#teknologi">Teknologi</a>
+      <a href="#kontak">Kontak</a>
+    </nav>
+    <div class="nav-right">
+      <span class="status-pill"><span class="dot"></span> Dalam pengembangan · 60%</span>
+      <button class="burger" id="burgerBtn" aria-label="Buka menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="#fitur">Fitur</a>
+    <a href="#cara-kerja">Cara Kerja</a>
+    <a href="#progres">Progres</a>
+    <a href="#teknologi">Teknologi</a>
+    <a href="#kontak">Kontak</a>
+  </div>
+</header>
+
+<main>
+  <!-- HERO -->
+  <section class="hero wrap">
+    <div>
+      <div class="eyebrow">Proyek independen · Otomasi sekolah</div>
+      <h1>Sekolah yang <em>membalas pesan</em> orang tua dalam hitungan detik.</h1>
+      <p class="lead">Bot Sekolah Cerdas menghubungkan WhatsApp sekolah dengan alur kerja n8n dan Hermes Agent, sehingga absensi, info PPDB, tagihan, dan pertanyaan orang tua dijawab otomatis — tanpa staf duduk depan HP sepanjang hari.</p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="#kontak">Diskusikan proyek ini</a>
+        <a class="btn btn-ghost" href="#cara-kerja">Lihat cara kerjanya</a>
+      </div>
+      <div class="hero-note">Dibangun di atas n8n, WhatsApp Business API, dan Hermes Agent.</div>
+    </div>
+
+    <div class="phone" aria-hidden="true">
+      <div class="phone-screen">
+        <div class="phone-bar">
+          <span class="phone-avatar">SD</span>
+          <div class="who">
+            SD Nusa Harapan
+            <small><span class="dot" style="background:#8FE3B4;"></span> Bot Assistant · online</small>
+          </div>
+        </div>
+        <div class="phone-body">
+          <div class="bubble in b1">Assalamualaikum, mau tanya jadwal ujian tengah semester kelas 5A<span class="time">08.12</span></div>
+          <div class="typing" aria-hidden="true"><i></i><i></i><i></i></div>
+          <div class="bubble out b2">Waalaikumsalam Bu Sari 🙏 Ujian Tengah Semester kelas 5A dimulai <b>14 Juli</b>, jadwal lengkap saya kirimkan ya.<span class="time">08.12</span></div>
+          <div class="bubble in b3">Baik, terima kasih<span class="time">08.13</span></div>
+          <div class="bubble out b4">Sama-sama. File jadwal & kartu ujian sudah terkirim. Ada lagi yang bisa dibantu?<span class="time">08.13</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section id="fitur" class="alt-bg">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="eyebrow">Fitur</div>
+        <h2>Satu nomor WhatsApp, enam pekerjaan administrasi.</h2>
+        <p>Setiap fitur berjalan sebagai alur kerja n8n yang dipahami dan dijalankan oleh Hermes Agent — bisa disesuaikan per sekolah tanpa mengubah kode.</p>
+      </div>
+
+      <div class="feature-grid">
+        <div class="feature">
+          <svg class="ic" viewBox="0 0 40 40" fill="none"><rect x="6" y="8" width="28" height="24" rx="3" stroke="#24483F" stroke-width="1.6"/><path d="M12 16h16M12 22h10" stroke="#24483F" stroke-width="1.6" stroke-linecap="round"/><circle cx="30" cy="27" r="5" fill="#B8862B"/><path d="M28 27l1.4 1.4L32 25.8" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <h3>Absensi otomatis</h3>
+          <p>Notifikasi kehadiran & keterlambatan siswa terkirim ke orang tua begitu absen tercatat.</p>
+        </div>
+        <div class="feature">
+          <svg class="ic" viewBox="0 0 40 40" fill="none"><path d="M20 6l14 7-14 7-14-7 14-7z" stroke="#24483F" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 17v9c0 2.2 5 5 11 5s11-2.8 11-5v-9" stroke="#24483F" stroke-width="1.6"/></svg>
+          <h3>Info PPDB</h3>
+          <p>Pertanyaan seputar pendaftaran siswa baru — syarat, biaya, jadwal — dijawab otomatis 24 jam.</p>
+        </div>
+        <div class="feature">
+          <svg class="ic" viewBox="0 0 40 40" fill="none"><rect x="7" y="9" width="26" height="22" rx="3" stroke="#24483F" stroke-width="1.6"/><path d="M7 16h26" stroke="#24483F" stroke-width="1.6"/><path d="M14 22h4M14 26h8" stroke="#B8862B" stroke-width="1.6" stroke-linecap="round"/></svg>
+          <h3>Pengingat SPP</h3>
+          <p>Pengingat jatuh tempo terkirim otomatis, konfirmasi pembayaran diteruskan ke bendahara.</p>
+        </div>
+        <div class="feature">
+          <svg class="ic" viewBox="0 0 40 40" fill="none"><path d="M8 12h24M8 20h24M8 28h16" stroke="#24483F" stroke-width="1.6" stroke-linecap="round"/><circle cx="33" cy="28" r="3" fill="#B8862B"/></svg>
+          <h3>Jadwal & pengumuman</h3>
+          <p>Siaran jadwal ujian, hari libur, dan pengumuman mendadak langsung ke semua wali kelas.</p>
+        </div>
+        <div class="feature">
+          <svg class="ic" viewBox="0 0 40 40" fill="none"><circle cx="20" cy="18" r="10" stroke="#24483F" stroke-width="1.6"/><path d="M20 13v5l3 3" stroke="#24483F" stroke-width="1.6" stroke-linecap="round"/><path d="M13 32c1-3 4-5 7-5s6 2 7 5" stroke="#24483F" stroke-width="1.6" stroke-linecap="round"/></svg>
+          <h3>Tanya jawab sekolah</h3>
+          <p>Hermes Agent memahami pertanyaan bebas dalam Bahasa Indonesia, bukan sekadar menu pilihan.</p>
+        </div>
+        <div class="feature">
+          <svg class="ic" viewBox="0 0 40 40" fill="none"><path d="M8 30V16l12-8 12 8v14" stroke="#24483F" stroke-width="1.6" stroke-linejoin="round"/><path d="M16 30v-8h8v8" stroke="#B8862B" stroke-width="1.6"/></svg>
+          <h3>Eskalasi ke staf</h3>
+          <p>Kasus di luar kemampuan bot otomatis diteruskan ke admin manusia, lengkap dengan riwayat chat.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CARA KERJA -->
+  <section id="cara-kerja">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="eyebrow">Cara Kerja</div>
+        <h2>Empat lapis sederhana di balik satu balasan.</h2>
+        <p>Pesan masuk melewati alur yang jelas — mudah dipantau, mudah diperbaiki jika ada yang salah.</p>
+      </div>
+
+      <div class="flow">
+        <div class="flow-step">
+          <span class="tag">01 · Masuk</span>
+          <h3>WhatsApp</h3>
+          <p>Orang tua atau siswa mengirim pesan ke nomor resmi sekolah, seperti biasa.</p>
+        </div>
+        <div class="flow-arrow"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M4 12h15M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="flow-step">
+          <span class="tag">02 · Alur kerja</span>
+          <h3>n8n</h3>
+          <p>Mengatur routing, validasi, dan menghubungkan ke sistem data sekolah yang relevan.</p>
+        </div>
+        <div class="flow-arrow"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M4 12h15M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="flow-step">
+          <span class="tag">03 · Pemahaman</span>
+          <h3>Hermes Agent</h3>
+          <p>Memahami maksud pesan dan menyusun balasan, atau memutuskan perlu eskalasi.</p>
+        </div>
+        <div class="flow-arrow"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M4 12h15M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="flow-step">
+          <span class="tag">04 · Data</span>
+          <h3>Sistem sekolah</h3>
+          <p>Absensi, keuangan, dan jadwal diambil dan diperbarui secara langsung.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROGRES -->
+  <section id="progres" class="alt-bg">
+    <div class="wrap">
+      <div class="progress-top">
+        <div>
+          <div class="eyebrow">Progres pengembangan</div>
+          <h2 style="font-size:clamp(1.4rem,2.6vw,1.9rem);">Status pembangunan saat ini</h2>
+        </div>
+        <div class="progress-num">60<span>%</span></div>
+      </div>
+
+      <div class="track">
+        <div class="track-line"></div>
+        <div class="track-line-fill"></div>
+        <div class="track-nodes">
+          <div class="node done">
+            <span class="node-dot"></span>
+            <div>
+              <div class="node-label">Riset & rancangan alur</div>
+              <div class="node-status">Selesai</div>
+            </div>
+          </div>
+          <div class="node done">
+            <span class="node-dot"></span>
+            <div>
+              <div class="node-label">Integrasi WhatsApp API</div>
+              <div class="node-status">Selesai</div>
+            </div>
+          </div>
+          <div class="node done">
+            <span class="node-dot"></span>
+            <div>
+              <div class="node-label">Workflow inti n8n</div>
+              <div class="node-status">Selesai</div>
+            </div>
+          </div>
+          <div class="node active">
+            <span class="node-dot"></span>
+            <div>
+              <div class="node-label">Hermes Agent</div>
+              <div class="node-status">Berjalan</div>
+            </div>
+          </div>
+          <div class="node">
+            <span class="node-dot"></span>
+            <div>
+              <div class="node-label">Integrasi data sekolah</div>
+              <div class="node-status">Mendatang</div>
+            </div>
+          </div>
+          <div class="node">
+            <span class="node-dot"></span>
+            <div>
+              <div class="node-label">Uji coba & peluncuran</div>
+              <div class="node-status">Mendatang</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TEKNOLOGI -->
+  <section id="teknologi">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="eyebrow">Teknologi</div>
+        <h2>Ditopang alat yang sudah terbukti.</h2>
+        <p>Susunan teknologi dipilih agar mudah dirawat satu orang, sekaligus siap dipakai produksi.</p>
+      </div>
+      <div class="stack-row">
+        <span class="chip"><b>n8n</b> · orkestrasi alur kerja</span>
+        <span class="chip"><b>Hermes Agent</b> · pemahaman bahasa</span>
+        <span class="chip"><b>WhatsApp Business API</b> · kanal pesan</span>
+        <span class="chip"><b>Node.js</b> · layanan pendukung</span>
+        <span class="chip"><b>PostgreSQL</b> · penyimpanan data</span>
+        <span class="chip"><b>Docker</b> · deployment</span>
+        <span class="chip"><b>Webhook & REST API</b> · integrasi sistem sekolah</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- KONTAK -->
+  <section id="kontak">
+    <div class="wrap">
+      <div class="contact-box">
+        <div>
+          <h2>Tertarik jadi sekolah uji coba?</h2>
+          <p>Proyek ini dikembangkan mandiri dan masih terbuka untuk masukan, kolaborasi, maupun sekolah yang ingin menjajal versi awal.</p>
+        </div>
+        <div class="contact-actions">
+          <a class="btn btn-primary" href="https://wa.me/6281361711646" target="_blank" rel="noopener">Chat via WhatsApp</a>
+          
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap foot-row">
+    <span>© 2026 Bot Sekolah Cerdas. Proyek independen — dalam pengembangan.</span>
+    <span class="mono">n8n · WhatsApp · Hermes Agent</span>
+  </div>
+</footer>
+
+<script>
+  const burger = document.getElementById('burgerBtn');
+  const menu = document.getElementById('mobileMenu');
+  burger.addEventListener('click', () => {
+    const open = menu.classList.toggle('open');
+    burger.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  menu.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
+    menu.classList.remove('open');
+    burger.setAttribute('aria-expanded', 'false');
+  }));
+</script>
+
+</body>
+</html>
